@@ -36,16 +36,25 @@ aed = AcousticEncoderDecoder()
 
 # The following code is modified from aed.fit
 zscore_response = True
+do_fund = False
 
 # Reading the data
 aed.read_preproc_file(preproc_file)
 aed.model_type = 'linear'    # I don't think this is used for anything
 
-# X is neural data, nsamp the number of syllables/stims
-nsamps, nfeatures_neural = aed.X.shape
+# Find entries that are valid for fundamental
+sound_fund = aed.S[:,aed.integer2prop.index(b'fund')]
+ind_fund = sound_fund != -1.0
+
+# We remove the data here that does not have fundemental estimation
+if do_fund:
+    aed.S = aed.S[ind_fund,:]
+    aed.X = aed.X[ind_fund,:]
+    aed.Y = aed.Y[ind_fund,:]
 
 # S is stimulus features
-nfeatures_stim = aed.S.shape[1]
+nsamps, nfeatures_stim = aed.S.shape
+nfeatures_neural = aed.X.shape[1]
 
 # Make a stimulus matrix
 # Note that the stimulus matrix does not need to be normalize - as this is done in sklearn routines
@@ -54,17 +63,23 @@ sound_dur = aed.S[:,aed.integer2prop.index(b'stdtime')].reshape(nsamps, 1)
 sound_loud = (np.log(aed.S[:,aed.integer2prop.index(b'maxAmp')]*aed.S[:, aed.integer2prop.index(b'stdtime')])).reshape(nsamps,1)
 sound_sal = aed.S[:,aed.integer2prop.index(b'sal')].reshape(nsamps, 1)
 sound_meanspect = aed.S[:,aed.integer2prop.index(b'meanspect')].reshape(nsamps, 1)
+sound_skewT = aed.S[:, aed.integer2prop.index(b'skewtime')].reshape(nsamps, 1)
+sound_fund = aed.S[:,aed.integer2prop.index(b'fund')].reshape(nsamps, 1)
 
-S = np.hstack( (sound_amp, sound_dur, sound_loud, sound_sal, sound_meanspect) )
-S_names = [b'maxAmp', b'stdtime', b'loudness', b'sal', b'meanspect']
+if do_fund:
+    S = np.hstack( (sound_amp, sound_dur, sound_loud, sound_fund) )
+    S_names = [b'maxAmp', b'stdtime', b'loudness', b'fund']
+else:
+    S = np.hstack( (sound_amp, sound_dur, sound_loud, sound_sal, sound_meanspect, sound_skewT) )
+    S_names = [b'maxAmp', b'stdtime', b'loudness', b'sal', b'meanspect', b'skewtime']
+
 nsamps,nfeatures = S.shape
-
+        
     
-# Y has information about each stimulus or syllables
+# Y has information about each stimulus or syllables used for generating cross-validation sets
 assert aed.Y.shape[0] == nsamps
 
-aed.good_encoders = list()
-
+# This is smart bootstraping to use different birds,etc
 cv_indices = list(zip(*aed.bootstrap(25)))
 
 # Base features to deat with sound intensity
