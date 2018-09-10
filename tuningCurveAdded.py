@@ -36,7 +36,7 @@ aed = AcousticEncoderDecoder()
 
 # The following code is modified from aed.fit
 zscore_response = True
-do_fund = False
+do_fund = True
 
 # Reading the data
 aed.read_preproc_file(preproc_file)
@@ -61,14 +61,28 @@ nfeatures_neural = aed.X.shape[1]
 sound_amp = np.log(aed.S[:,aed.integer2prop.index(b'maxAmp')]).reshape(nsamps,1)
 sound_dur = aed.S[:,aed.integer2prop.index(b'stdtime')].reshape(nsamps, 1)
 sound_loud = (np.log(aed.S[:,aed.integer2prop.index(b'maxAmp')]*aed.S[:, aed.integer2prop.index(b'stdtime')])).reshape(nsamps,1)
+
 sound_sal = aed.S[:,aed.integer2prop.index(b'sal')].reshape(nsamps, 1)
+
 sound_meanspect = aed.S[:,aed.integer2prop.index(b'meanspect')].reshape(nsamps, 1)
+
+sound_meanspect = aed.S[:,aed.integer2prop.index(b'meanspect')].reshape(nsamps, 1)
+sound_q1 = aed.S[:,aed.integer2prop.index(b'q1')].reshape(nsamps, 1)
+sound_q2 = aed.S[:,aed.integer2prop.index(b'q2')].reshape(nsamps, 1)
+sound_q3 = aed.S[:,aed.integer2prop.index(b'q3')].reshape(nsamps, 1)
+
 sound_skewT = aed.S[:, aed.integer2prop.index(b'skewtime')].reshape(nsamps, 1)
+sound_kurT = aed.S[:, aed.integer2prop.index(b'kurtositime')].reshape(nsamps, 1)
+sound_entT = aed.S[:, aed.integer2prop.index(b'entropytime')].reshape(nsamps, 1)
+
 sound_fund = aed.S[:,aed.integer2prop.index(b'fund')].reshape(nsamps, 1)
+sound_cvfund = aed.S[:,aed.integer2prop.index(b'cvfund')].reshape(nsamps, 1)
+sound_maxfund = aed.S[:,aed.integer2prop.index(b'maxfund')].reshape(nsamps, 1)
+sound_minfund = aed.S[:,aed.integer2prop.index(b'minfund')].reshape(nsamps, 1)
 
 if do_fund:
-    S = np.hstack( (sound_amp, sound_dur, sound_loud, sound_fund) )
-    S_names = [b'maxAmp', b'stdtime', b'loudness', b'fund']
+    S = np.hstack( (sound_amp, sound_dur, sound_loud, sound_fund, sound_cvfund) )
+    S_names = [b'maxAmp', b'stdtime', b'loudness', b'fund', b'cvfund']
 else:
     S = np.hstack( (sound_amp, sound_dur, sound_loud, sound_sal, sound_meanspect, sound_skewT) )
     S_names = [b'maxAmp', b'stdtime', b'loudness', b'sal', b'meanspect', b'skewtime']
