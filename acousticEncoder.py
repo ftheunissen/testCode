@@ -106,7 +106,7 @@ def run_encoder(preproc_file):
     cv_indices = list(zip(*aed.bootstrap(25)))
 
     # Make a stimulus matrix
-    # Note that the stimulus matrix does not need to be normalize - as this is done in sklearn routines
+    # Note that the stimulus matrix does not need to be normalized - as this is done in sklearn routines
     features, feature_groups = select_sound_feat(aed) 
 
     # Full feature space
@@ -114,7 +114,7 @@ def run_encoder(preproc_file):
     Sfull_names = [name for feature_grp_names in feature_groups for name in feature_grp_names ] 
 
 
-    # The one for the fundamental is done first because if it based on the restricted set
+    # For the added-value models, the one for the fundamental is done first because if it based on the restricted set
     ia = 0
     Sadded_names =  base_feature_names[ia] + added_valuegroups[ia]
     ind_added = [Sfull_names.index(strval) for strval in Sadded_names]
@@ -190,6 +190,7 @@ def run_encoder(preproc_file):
             amodel['group'] = ia
             resultsAll.append(xmodels[0])
             resultsAll.append(amodel)
+            
     
     # Do the added value models for meanspect, bandwidth and saliency using all of the data
     # Reading the data again to have it all
@@ -242,8 +243,8 @@ def run_encoder(preproc_file):
                 amodel['group'] = ia
                 resultsAll.append(xmodels[0])
                 resultsAll.append(amodel)
+            
 
- 
     # Make a pandas data frame for the results
     resultsDataFrame = pd.DataFrame(data=resultsAll)
     
