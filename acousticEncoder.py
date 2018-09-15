@@ -511,34 +511,57 @@ def plot_encoder(preproc_file, resultsDataFrame):
 #-----------------------------------------------------------------------------
 
 # Encoder wrapper for analysing how acoustical features predict neural response
+batchflg = True
 
+if batchflg:
+    decomps = ['full_psds', 'spikes']
+    exp_names = ['YelBlu6903F', 'BlaBro09xxF', 'GreBlu9508M', 'WhiWhi4522M' ]
+    plot_me = False
+else:
+    decomps = ['full_psds']   
+    exp_names = ['GreBlu9508M']
+    plot_me = True
     
+
 # This is the stuff that the wrapper will read
-exp_name = 'GreBlu9508M'
-preproc_dir = '/Users/frederictheunissen/Documents/Data/mschachter/%s/preprocess' % exp_name
-encoder_dir = '/Users/frederictheunissen/Documents/Data/mschachter/%s/encoder' % exp_name
 
-seg_uname = 'Site4_Call1_L'
+for exp_name in exp_names:
 
-plot_me = True           # Set to false for batch
+    if batchflg:
+        preproc_dir = '/auto/tdrive/mschachter/data/%s/preprocess' % exp_name
+        encoder_dir = '/auto/tdrive/mschachter/data/%s/encoder' % exp_name
+    else:            
+        preproc_dir = '/Users/frederictheunissen/Documents/Data/mschachter/%s/preprocess' % exp_name
+        encoder_dir = '/Users/frederictheunissen/Documents/Data/mschachter/%s/encoder' % exp_name
 
-# Loop through these in batch
-decomps = ['full_psds', 'spike_rate']
-    
-# Input and output files
-for decomp in decomps:
-    preproc_file = os.path.join(preproc_dir, 'preproc_%s_%s.h5' % (seg_uname, decomp))
-    output_file = os.path.join(encoder_dir, 'encoder_%s_%s.h5' % (seg_uname, decomp))
+    seg_list = []
+    for fname in os.listdir(preproc_dir):
+        for decomp in decomps:
+            if fname.endswith('R_%s.h5' % decomp) and fname.beginswith('preproc_'):
+                segname = fname.split('_')[1] + '_' +fname.split('_')[2] + '_' + fname.split('_')[3]
+                seg_list.append(segname)
+            if fname.endswith('L_%s.h5' % decomp) and fname.beginswith('preproc_'):
+                segname = fname.split('_')[1] + '_' +fname.split('_')[2] + '_' + fname.split('_')[3]
+                seg_list.append(segname)
+                
+    if batchflg:
+        print('Exp %s:' % exp_name)
+        print('\t %s' % seg_list)
 
-
-    # Running all the encoders
-    resultsDataFrame = run_encoder(preproc_file)
-    resultsDataFrame.to_pickle(output_file)
-
-    # Save the results
-    resultsDataFrame.to_pickle(output_file)
-
-    # Plotting all the results
-    if plot_me:
-        plot_encoder(preproc_file, resultsDataFrame)
+#    for seg_uname in seg_list:
+#        for decomp in decomps:
+#            
+#            preproc_file = os.path.join(preproc_dir, 'preproc_%s_%s.h5' % (seg_uname, decomp))
+#            output_file = os.path.join(encoder_dir, 'encoder_%s_%s.h5' % (seg_uname, decomp))
+#
+#
+#            # Running all the encoders
+#            resultsDataFrame = run_encoder(preproc_file)
+#
+#            # Save the results
+#            resultsDataFrame.to_pickle(output_file)
+#
+#            # Plotting all the results
+#            if plot_me:
+#                plot_encoder(preproc_file, resultsDataFrame)
 
