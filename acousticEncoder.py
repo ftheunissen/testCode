@@ -515,7 +515,7 @@ batchflg = True
 
 if batchflg:
     decomps = ['full_psds', 'spikes']
-    exp_names = ['YelBlu6903F', 'BlaBro09xxF', 'GreBlu9508M', 'WhiWhi4522M' ]
+    exp_names = ['YelBlu6903F', 'GreBlu9508M', 'WhiWhi4522M' ]
     plot_me = False
 else:
     decomps = ['full_psds']   
@@ -537,10 +537,10 @@ for exp_name in exp_names:
     seg_list = []
     for fname in os.listdir(preproc_dir):
         for decomp in decomps:
-            if fname.endswith('R_%s.h5' % decomp) and fname.beginswith('preproc_'):
+            if fname.endswith('R_%s.h5' % decomp) and fname.startswith('preproc_'):
                 segname = fname.split('_')[1] + '_' +fname.split('_')[2] + '_' + fname.split('_')[3]
                 seg_list.append(segname)
-            if fname.endswith('L_%s.h5' % decomp) and fname.beginswith('preproc_'):
+            if fname.endswith('L_%s.h5' % decomp) and fname.startswith('preproc_'):
                 segname = fname.split('_')[1] + '_' +fname.split('_')[2] + '_' + fname.split('_')[3]
                 seg_list.append(segname)
                 
