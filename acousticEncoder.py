@@ -48,7 +48,7 @@ def select_sound_feat(aed):
     names_meanS = [b'meanspect']
 
     # Spectral bandwidth
-    sound_stdS = aed.S[:,aed.integer2prop.index(b'meanspect')].reshape(nsamps, 1)
+    sound_stdS = aed.S[:,aed.integer2prop.index(b'stdspect')].reshape(nsamps, 1)
     names_stdS = [b'stdspect']
 
     # Spectral Shape
@@ -205,14 +205,14 @@ def run_encoder(preproc_file):
     Sfull_names = [name for feature_grp_names in feature_groups for name in feature_grp_names ] 
 
     for ia in range(len(added_valuegroups)):
-        if ia == 0:
+        if ia == 0: 
             continue        # this was done above with the restricted data set
     
         Sadded_names =  base_feature_names[ia] + added_valuegroups[ia]
         ind_added = [Sfull_names.index(strval) for strval in Sadded_names]
         Sadded = Sfull[:,ind_added]
         base_features = [Sadded_names.index(strval) for strval in base_feature_names[ia] ]
-    
+          
         for k in range(nfeatures_neural):    
             print(('\n----------------------------Spike %d--------------------------\n')% k)
 
@@ -511,7 +511,7 @@ def plot_encoder(preproc_file, resultsDataFrame):
 #-----------------------------------------------------------------------------
 
 # Encoder wrapper for analysing how acoustical features predict neural response
-batchflg = True
+batchflg = True   # To run on cluster, otherwise on Frederic's laptop
 
 if batchflg:
     decomps = ['full_psds', 'spikes']
@@ -523,8 +523,6 @@ else:
     plot_me = True
     
 
-# This is the stuff that the wrapper will read
-
 for exp_name in exp_names:
 
     if batchflg:
@@ -533,7 +531,11 @@ for exp_name in exp_names:
     else:            
         preproc_dir = '/Users/frederictheunissen/Documents/Data/mschachter/%s/preprocess' % exp_name
         encoder_dir = '/Users/frederictheunissen/Documents/Data/mschachter/%s/encoder' % exp_name
-
+    
+    # Make the output directory if it does not exist.
+    if not os.path.exists(encoder_dir):
+        os.makedirs(encoder_dir)
+        
     seg_list = []
     for fname in os.listdir(preproc_dir):
         for decomp in decomps:
@@ -544,24 +546,20 @@ for exp_name in exp_names:
                 segname = fname.split('_')[1] + '_' +fname.split('_')[2] + '_' + fname.split('_')[3]
                 seg_list.append(segname)
                 
-    if batchflg:
-        print('Exp %s:' % exp_name)
-        print('\t %s' % seg_list)
 
-#    for seg_uname in seg_list:
-#        for decomp in decomps:
-#            
-#            preproc_file = os.path.join(preproc_dir, 'preproc_%s_%s.h5' % (seg_uname, decomp))
-#            output_file = os.path.join(encoder_dir, 'encoder_%s_%s.h5' % (seg_uname, decomp))
-#
-#
-#            # Running all the encoders
-#            resultsDataFrame = run_encoder(preproc_file)
-#
-#            # Save the results
-#            resultsDataFrame.to_pickle(output_file)
-#
-#            # Plotting all the results
-#            if plot_me:
-#                plot_encoder(preproc_file, resultsDataFrame)
+    for seg_uname in seg_list:
+        for decomp in decomps:
+            
+            preproc_file = os.path.join(preproc_dir, 'preproc_%s_%s.h5' % (seg_uname, decomp))
+            output_file = os.path.join(encoder_dir, 'encoder_%s_%s.h5' % (seg_uname, decomp))
+
+            # Running all the encoders
+            resultsDataFrame = run_encoder(preproc_file)
+
+            # Save the results
+            resultsDataFrame.to_pickle(output_file)
+
+            # Plotting all the results
+            if plot_me:
+                plot_encoder(preproc_file, resultsDataFrame)
 
