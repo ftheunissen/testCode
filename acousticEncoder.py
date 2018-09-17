@@ -509,57 +509,77 @@ def plot_encoder(preproc_file, resultsDataFrame):
     plt.show()
     
 #-----------------------------------------------------------------------------
-
-# Encoder wrapper for analysing how acoustical features predict neural response
-batchflg = True   # To run on cluster, otherwise on Frederic's laptop
-
-if batchflg:
-    decomps = ['full_psds', 'spikes']
-    exp_names = ['YelBlu6903F', 'GreBlu9508M', 'WhiWhi4522M' ]
-    plot_me = False
-else:
-    decomps = ['full_psds']   
-    exp_names = ['GreBlu9508M']
-    plot_me = True
-    
-
-for exp_name in exp_names:
+if __name__ == '__main__':
+    # Encoder wrapper for analysing how acoustical features predict neural response
+    batchflg = True   # To run on cluster, otherwise on Frederic's laptop
 
     if batchflg:
-        preproc_dir = '/auto/tdrive/mschachter/data/%s/preprocess' % exp_name
-        encoder_dir = '/auto/tdrive/mschachter/data/%s/encoder' % exp_name
-    else:            
-        preproc_dir = '/Users/frederictheunissen/Documents/Data/mschachter/%s/preprocess' % exp_name
-        encoder_dir = '/Users/frederictheunissen/Documents/Data/mschachter/%s/encoder' % exp_name
+        decomps = ['full_psds', 'spikes']
+        exp_names = ['YelBlu6903F', 'GreBlu9508M', 'WhiWhi4522M' ]
+        plot_me = False
+        recalc = False
+    else:
+        decomps = ['full_psds']   
+        exp_names = ['GreBlu9508M']
+        plot_me = True
+        recalc = True
     
-    # Make the output directory if it does not exist.
-    if not os.path.exists(encoder_dir):
-        os.makedirs(encoder_dir)
+
+    for exp_name in exp_names:
+
+        if batchflg:
+            preproc_dir = '/auto/tdrive/mschachter/data/%s/preprocess' % exp_name
+            encoder_dir = '/auto/tdrive/mschachter/data/%s/encoder' % exp_name
+        else:            
+            preproc_dir = '/Users/frederictheunissen/Documents/Data/mschachter/%s/preprocess' % exp_name
+            encoder_dir = '/Users/frederictheunissen/Documents/Data/mschachter/%s/encoder' % exp_name
+    
+        # Make the output directory if it does not exist.
+        if not os.path.exists(encoder_dir):
+            os.makedirs(encoder_dir)
         
-    seg_list = []
-    for fname in os.listdir(preproc_dir):
-        for decomp in decomps:
-            if fname.endswith('R_%s.h5' % decomp) and fname.startswith('preproc_'):
-                segname = fname.split('_')[1] + '_' +fname.split('_')[2] + '_' + fname.split('_')[3]
-                seg_list.append(segname)
-            if fname.endswith('L_%s.h5' % decomp) and fname.startswith('preproc_'):
-                segname = fname.split('_')[1] + '_' +fname.split('_')[2] + '_' + fname.split('_')[3]
-                seg_list.append(segname)
+        seg_list = [[] for ic in range(len(decomps))]
+        for fname in os.listdir(preproc_dir):
+            for ic, decomp in enumerate(decomps):
+                if fname.endswith('R_%s.h5' % decomp) and fname.startswith('preproc_'):
+                    segname = fname.split('_')[1] + '_' +fname.split('_')[2] + '_' + fname.split('_')[3]
+                    seg_list[ic].append(segname)
+                if fname.endswith('L_%s.h5' % decomp) and fname.startswith('preproc_'):
+                    segname = fname.split('_')[1] + '_' +fname.split('_')[2] + '_' + fname.split('_')[3]
+                    seg_list[ic].append(segname)
                 
+        # Test to see whether the two lists are identical
+        # The code below assumes that we only have 1 or 2 decomps
+        if len(decomps) == 2:
+            if (set(seg_list[0]) != set(seg_list[1])):
+                print('Error: Missmatch between the two decompositions')
+                print('Decomp %s' % decomps[0])
+                print(seg_list[0])
+                print('Decomp %s' % decomps[1])
+                print(seg_list[1])
+                print('Running only the intersection')                
+                seg_list_run = list(set(seg_list[0]).intersection(seg_list[1]))
+            else:
+                seg_list_run = seg_list[0]
+        else:
+            seg_list_run = seg_list[0]
 
-    for seg_uname in seg_list:
-        for decomp in decomps:
-            
-            preproc_file = os.path.join(preproc_dir, 'preproc_%s_%s.h5' % (seg_uname, decomp))
-            output_file = os.path.join(encoder_dir, 'encoder_%s_%s.h5' % (seg_uname, decomp))
+        for seg_uname in seg_list_run:
+            for decomp in decomps:
+                preproc_file = os.path.join(preproc_dir, 'preproc_%s_%s.h5' % (seg_uname, decomp))
+                output_file = os.path.join(encoder_dir, 'encoder_%s_%s.pkl' % (seg_uname, decomp))
+ 
+                if (not os.path.exists(output_file)) or recalc:
+                    print('------------------------------------START --------------------------------')
+                    print('%s' % preproc_file)
+                    # Running all the encoders
+                    resultsDataFrame = run_encoder(preproc_file)
 
-            # Running all the encoders
-            resultsDataFrame = run_encoder(preproc_file)
+                    # Save the results
+                    resultsDataFrame.to_pickle(output_file)
+                    print('------------------------------------DONE ----------------------------------')
 
-            # Save the results
-            resultsDataFrame.to_pickle(output_file)
-
-            # Plotting all the results
-            if plot_me:
-                plot_encoder(preproc_file, resultsDataFrame)
+                # Plotting all the results
+                if plot_me:
+                    plot_encoder(preproc_file, resultsDataFrame)
 
