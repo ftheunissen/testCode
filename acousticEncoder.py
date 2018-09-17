@@ -514,7 +514,7 @@ if __name__ == '__main__':
     batchflg = True   # To run on cluster, otherwise on Frederic's laptop
 
     if batchflg:
-        decomps = ['full_psds', 'spikes']
+        decomps = ['full_psds', 'spike_rate']
         exp_names = ['YelBlu6903F', 'GreBlu9508M', 'WhiWhi4522M' ]
         plot_me = False
         recalc = False
