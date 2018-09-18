@@ -12,7 +12,7 @@ from acousticEncoder import plot_encoder
 #-----------------------------------------------------------------------------
 
 # Encoder wrapper for analysing how acoustical features predict neural response
-batchflg = False  # To run on cluster, otherwise on Frederic's laptop
+batchflg = True  # To run on cluster, otherwise on Frederic's laptop
 
 if batchflg:
     exp_names = ['YelBlu6903F', 'GreBlu9508M', 'WhiWhi4522M' ]
