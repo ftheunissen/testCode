@@ -70,13 +70,14 @@ for exp_name in exp_names:
         if plot_me:
             plot_encoder(preproc_file, resultsDataFrame)
 
-        if i == 0:
+        if iframe == 0:
             resultsAgg = resultsDataFrame
         else:
             resultsAgg = pd.concat([resultsAgg, resultsDataFrame], ignore_index = True )
+        iframe = iframe +1
             
 
-print('%d dataframes were aggregated' % (i +1))
+print('%d dataframes were aggregated' % (iframe +1))
 
 # Saving aggregate data file
 resultsAgg.to_pickle(agg_file)
